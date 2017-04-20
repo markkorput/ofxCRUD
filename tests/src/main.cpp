@@ -1,7 +1,7 @@
 #include "ofxUnitTests.h"
 #include "ofxCRUD.h"
 
-#define TEST_START(x) {ofLog()<<#x;
+#define TEST_START(x) {ofLog()<<"CASE: "#x;
 #define TEST_END }
 
 using namespace ofxCRUD;
@@ -9,6 +9,10 @@ using namespace ofxCRUD;
 class ofApp: public ofxUnitTestsApp{
 
     void run(){
+        TEST_START(LambdaEvent)
+            ofLog() << "TODO";
+        TEST_END
+
         TEST_START(Parameter::getEvent)
             Parameter<int> number;
 
@@ -18,10 +22,10 @@ class ofApp: public ofxUnitTestsApp{
             test_eq(number.get(), 123, "");
 
             // getEvent
-            number.getEvent.addListener([](int& Parameter<int> numberParam)){
+            number.getEvent += [](Parameter<int>& param){
                 // change param value before it respond to the next .get call
-                numberParam.set(456);
-            });
+                param.set(456);
+            };
 
             test_eq(number.get(), 456, "");
         TEST_END

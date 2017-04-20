@@ -1,2 +1,3 @@
 ofxUnitTests
+ofxLiquidEvent
 ofxCRUD

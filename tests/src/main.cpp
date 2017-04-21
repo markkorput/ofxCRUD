@@ -9,9 +9,12 @@ using namespace ofxCRUD;
 
 class ImageNode {
 public:
-    int status;
+    ImageNode(){ status = "uninitialized"; }
+    string status;
     string filename;
     ofVec3f position, scale;
+
+    string getStatus(){ return status; }
 };
 
 class ofApp: public ofxUnitTestsApp{
@@ -40,28 +43,56 @@ class ofApp: public ofxUnitTestsApp{
         TEST_END
 
 
-        TEST_START(defineResource)
-            ofLog() << "TODO";
-
-            auto ref = make_shared<int>();
-            auto ref1 = static_pointer_cast<void>(ref);
-
+        TEST_START(Manager)
             // Add/Define a resouce
             ofxCRUD::Manager manager;
+
+            test_eq(manager.getDefinitions().size(), 0, "");
             auto resDefRef = manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
                 def.setResourceType("ImageNode");
                 // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
                 // def->addProperty<string>("file",                                    // property name
                 //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
                 //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
-                def.addProperty<int>("status");
+                def.addProperty<string>("status");
                 def.addProperty<ofVec3f>("position");
                 def.addProperty<ofVec3f>("scale");
             });
 
-            test_eq(resDefRef->getParameters().getType(0), typeid(ofParameter<int>).name(), "");
-            test_eq(resDefRef->getParameters().getType(1), typeid(ofParameter<ofVec3f>).name(), "");
-            test_eq(resDefRef->getParameters().getType(2), typeid(ofParameter<ofVec3f>).name(), "");
+
+            TEST_START(Manager::defineResource)
+                test_eq(manager.getDefinitions().size(), 1, "");
+                test_eq(manager.getDefinitions()[0]->getResourceType(), "ImageNode", "");
+
+                // first property is an int-based ID, always added at instantiation
+                test_eq(resDefRef->getParameters().getType(0), typeid(ofParameter<int>).name(), "");
+                test_eq(resDefRef->getParameters().getType(1), typeid(ofParameter<string>).name(), "");
+                test_eq(resDefRef->getParameters().getType(2), typeid(ofParameter<ofVec3f>).name(), "");
+                test_eq(resDefRef->getParameters().getType(3), typeid(ofParameter<ofVec3f>).name(), "");
+                test_eq(resDefRef->getParameters().getName(0), "id", "");
+                test_eq(resDefRef->getParameters().getName(1), "status", "");
+                test_eq(resDefRef->getParameters().getName(2), "position", "");
+                test_eq(resDefRef->getParameters().getName(3), "scale", "");
+            TEST_END
+
+
+            TEST_START(CREATE)
+
+                // "/ofxCRUD/ImageNode/create/start"
+                // "/ofxCRUD/ImageNode/create/status", 2
+                // "/ofxCRUD/ImageNode/create/position", 2,4,3
+                // "/ofxCRUD/ImageNode/create/scale", 1,1,1
+                // "/ofxCRUD/ImageNode/create/end"
+
+                shared_ptr<ImageNode> imageNodeRef = resDefRef->createInstance();
+                test_eq(imageNodeRef == nullptr, false, "");
+                test_eq(imageNodeRef->getStatus(), "uninitialized", "");
+            TEST_END
+
+            TEST_START(UPDATE)
+
+            TEST_END
+        TEST_END
 
 
             //
@@ -149,18 +180,6 @@ class ofApp: public ofxUnitTestsApp{
             //         definitionRef.process(operationData);
             //     }
             // }
-
-        TEST_END
-
-        TEST_START(Facade::READ)
-        ofLog() << "TODO";
-        TEST_END
-        TEST_START(Facade::UPDATE)
-        ofLog() << "TODO";
-        TEST_END
-        TEST_START(Facade::DELETE)
-        ofLog() << "TODO";
-        TEST_END
     }
 };
 

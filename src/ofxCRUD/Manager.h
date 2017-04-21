@@ -11,12 +11,27 @@ namespace ofxCRUD {
 
     public:
 
+        BaseResourceDefinition(){
+            addProperty<int>("id");
+        }
+
         const string& getResourceType(){
             return resourceType;
         }
 
         const ofParameterGroup& getParameters(){
             return parameterGroup;
+        }
+
+        template<typename PropType>
+        void addProperty(const string& name){
+            auto param = new ofParameter<PropType>();
+            param->setName(name);
+            parameterGroup.add(*param);
+        }
+
+        shared_ptr<void> createInstance(){
+            return nullptr;
         }
     };
 
@@ -29,11 +44,8 @@ namespace ofxCRUD {
             resourceType = newResourceType;
         }
 
-        template<typename PropType>
-        void addProperty(const string& name){
-            auto param = new ofParameter<PropType>();
-            param->setName(name);
-            parameterGroup.add(*param);
+        shared_ptr<ResourceType> createInstance(){
+            return make_shared<ResourceType>();
         }
     };
 
@@ -43,7 +55,13 @@ namespace ofxCRUD {
 
         template<typename T>
         shared_ptr<ResourceDefinition<T>> defineResource(std::function<void (ResourceDefinition<T>&)>  func);
-        //shared_ptr<ResourceDefinition<T>>
+
+        const std::vector<shared_ptr<BaseResourceDefinition>>& getDefinitions() const {
+            return definedResourceDefinitions;
+        }
+
+    private:
+        std::vector<shared_ptr<BaseResourceDefinition>> definedResourceDefinitions;
     };
 
 
@@ -51,6 +69,7 @@ namespace ofxCRUD {
     shared_ptr<ResourceDefinition<T>> Manager::defineResource(std::function<void (ResourceDefinition<T>&)>  func){
         auto resDefRef = make_shared<ResourceDefinition<T>>();
         func(*resDefRef.get());
+        definedResourceDefinitions.push_back(resDefRef);
         return resDefRef;
     }
 }

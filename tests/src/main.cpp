@@ -48,7 +48,7 @@ class ofApp: public ofxUnitTestsApp{
 
             // Add/Define a resouce
             ofxCRUD::Manager manager;
-            manager.defineResource<ImageNode>(/*[](ResourceDefinition<ImageNode>& def){
+            manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
                 // def->setResourceTypeName("ImageNode");
                 // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
                 // def->addProperty<string>("file",                                    // property name
@@ -57,7 +57,7 @@ class ofApp: public ofxUnitTestsApp{
                 // def->addProperty<int>("status");
                 // def->addProperty<ofVec3f>("position");
                 // def->addProperty<ofVec3f>("scale");
-            }*/);
+            });
 
             //
             // auto ref = make_shared<Facade>();

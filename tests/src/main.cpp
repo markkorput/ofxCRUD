@@ -48,16 +48,21 @@ class ofApp: public ofxUnitTestsApp{
 
             // Add/Define a resouce
             ofxCRUD::Manager manager;
-            manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
-                // def->setResourceTypeName("ImageNode");
+            auto resDefRef = manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
+                def.setResourceType("ImageNode");
                 // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
                 // def->addProperty<string>("file",                                    // property name
                 //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
                 //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
-                // def->addProperty<int>("status");
-                // def->addProperty<ofVec3f>("position");
-                // def->addProperty<ofVec3f>("scale");
+                def.addProperty<int>("status");
+                def.addProperty<ofVec3f>("position");
+                def.addProperty<ofVec3f>("scale");
             });
+
+            test_eq(resDefRef->getParameters().getType(0), typeid(ofParameter<int>).name(), "");
+            test_eq(resDefRef->getParameters().getType(1), typeid(ofParameter<ofVec3f>).name(), "");
+            test_eq(resDefRef->getParameters().getType(2), typeid(ofParameter<ofVec3f>).name(), "");
+
 
             //
             // auto ref = make_shared<Facade>();

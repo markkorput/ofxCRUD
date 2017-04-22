@@ -5,20 +5,6 @@
 
 namespace ofxCRUD {
 
-    class Actuator {
-    public:
-        void setParameters(ofParameterGroup* newParameters){
-            params = newParameters;
-        }
-
-        ofParameterGroup* getParameters(){
-            return params;
-        }
-
-    private:
-        ofParameterGroup* params;
-    };
-
     class BaseResourceDefinition {
     protected:
         string resourceType;
@@ -39,10 +25,11 @@ namespace ofxCRUD {
         }
 
         template<typename PropType>
-        void addProperty(const string& name){
+        ofParameter<PropType>& addProperty(const string& name){
             auto param = new ofParameter<PropType>();
             param->setName(name);
             parameterGroup.add(*param);
+            return param;
         }
 
         shared_ptr<void> createInstance(){
@@ -50,11 +37,24 @@ namespace ofxCRUD {
         }
 
         virtual shared_ptr<void> find(unsigned int id) = 0;
+        virtual shared_ptr<ofParameterGroup> getInstanceParameters(int id) = 0;
     };
 
 
     template<typename ResourceType>
     class ResourceDefinition : public BaseResourceDefinition {
+
+        class InstanceParameterGroup : public ofParameterGroup {
+        public:
+            void setup(shared_ptr<ResourceType> instance, ofParameterGroup& sourceParams){
+                this->instance = instance;
+                this->sourceParams = &sourceParams;
+            }
+
+        private:
+            shared_ptr<ResourceType> instance;
+            ofParameterGroup* sourceParams;
+        };
 
     public:
 
@@ -83,20 +83,22 @@ namespace ofxCRUD {
         }
 
         template<typename PropType>
-        void addProperty(const string& name,
+        ofParameter<PropType>& addProperty(const string& name,
             std::function<const PropType& (ResourceType&)> getterFunc = nullptr,
             std::function<void (ResourceType&, PropType& value)> setterFunc = nullptr){
-            BaseResourceDefinition::addProperty<PropType>(name);
+            return BaseResourceDefinition::addProperty<PropType>(name);
         }
+
+        virtual shared_ptr<ofParameterGroup> getInstanceParameters(int id){
+            auto instanceParams = make_shared<InstanceParameterGroup>();
+            return instanceParams;
+        }
+
         //
         // shared_ptr<Actuator> getActuator(shared_ptr<ResourceType>){
         //     auto actuatorRef = make_shared<Actuator>();
         //     actuatorRef->setParameters(&parameterGroup);
         // }
-
-        void process(shared_ptr<ofxOscMessage> oscMsg){
-
-        }
 
     private:
         unsigned int nextId;

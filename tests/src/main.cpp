@@ -110,7 +110,18 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "uninitialized", "");
                 // perform update
 
+                ofxOscMessage oscMsg;
+                oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/start");
+                manager.process(oscMsg);
+                oscMsg.clear();
+                oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/status");
+                oscMsg.addStringArg("init-ed");
+                manager.process(oscMsg);
+                oscMsg.clear();
+                oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/end");
+                manager.process(oscMsg);
 
+                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
             TEST_END
         TEST_END
 

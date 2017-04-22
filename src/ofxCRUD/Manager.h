@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxOsc.h"
+
 #include "ResourceDefinition.h"
 
 namespace ofxCRUD {
@@ -24,6 +26,10 @@ namespace ofxCRUD {
             }
 
             return nullptr;
+        }
+
+        void process(ofxOscMessage& msg){
+
         }
 
     private:

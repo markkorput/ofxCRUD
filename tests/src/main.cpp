@@ -108,20 +108,26 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(static_pointer_cast<ImageNode>(voidRef), firstImageNodeRef,  "");
                 // still has original value
                 test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "uninitialized", "");
+                string s = resDefRef->getParameters().getString("status").get();
+                test_eq(s, "", "");
                 // perform update
 
                 ofxOscMessage oscMsg;
-                oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/start");
-                manager.process(oscMsg);
-                oscMsg.clear();
+                // oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/start");
+                // manager.process(oscMsg);
+                // oscMsg.clear();
                 oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/status");
                 oscMsg.addStringArg("init-ed");
                 manager.process(oscMsg);
-                oscMsg.clear();
-                oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/end");
-                manager.process(oscMsg);
+                // oscMsg.clear();
+                // oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/end");
+                // manager.process(oscMsg);
 
-                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
+                // check if the resource definition's status params was updated
+                s = resDefRef->getParameters().getString("status").get();
+                test_eq(s, "init-ed", "");
+                // check if the param's change was propagatd to the node's attribute
+                // test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
             TEST_END
         TEST_END
 

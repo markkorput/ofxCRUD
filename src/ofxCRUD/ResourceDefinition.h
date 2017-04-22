@@ -11,7 +11,7 @@ namespace ofxCRUD {
             params = newParameters;
         }
 
-        const ofParameterGroup* getParameters(){
+        ofParameterGroup* getParameters(){
             return params;
         }
 
@@ -34,7 +34,7 @@ namespace ofxCRUD {
             return resourceType;
         }
 
-        const ofParameterGroup& getParameters(){
+        ofParameterGroup& getParameters(){
             return parameterGroup;
         }
 

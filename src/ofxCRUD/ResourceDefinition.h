@@ -82,10 +82,17 @@ namespace ofxCRUD {
             return it->second;
         }
 
-        shared_ptr<Actuator> getActuator(shared_ptr<ResourceType>){
-            auto actuatorRef = make_shared<Actuator>();
-            actuatorRef->setParameters(&parameterGroup);
+        template<typename PropType>
+        void addProperty(const string& name,
+            std::function<const PropType& (ResourceType&)> getterFunc = nullptr,
+            std::function<void (ResourceType&, PropType& value)> setterFunc = nullptr){
+            BaseResourceDefinition::addProperty<PropType>(name);
         }
+        //
+        // shared_ptr<Actuator> getActuator(shared_ptr<ResourceType>){
+        //     auto actuatorRef = make_shared<Actuator>();
+        //     actuatorRef->setParameters(&parameterGroup);
+        // }
 
         void process(shared_ptr<ofxOscMessage> oscMsg){
 

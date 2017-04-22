@@ -56,7 +56,9 @@ class ofApp: public ofxUnitTestsApp{
                 // def->addProperty<string>("file",                                    // property name
                 //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
                 //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
-                def.addProperty<string>("status");
+                def.addProperty<string>("status",
+                    [](ImageNode& node){ return node.status; },
+                    [](ImageNode& node, string& value){ return node.status = value; });
                 def.addProperty<ofVec3f>("position");
                 def.addProperty<ofVec3f>("scale");
             });
@@ -127,7 +129,7 @@ class ofApp: public ofxUnitTestsApp{
                 s = resDefRef->getParameters().getString("status").get();
                 test_eq(s, "init-ed", "");
                 // check if the param's change was propagatd to the node's attribute
-                // test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
+                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
             TEST_END
         TEST_END
 

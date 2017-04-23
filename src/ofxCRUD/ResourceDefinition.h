@@ -32,6 +32,7 @@ namespace ofxCRUD {
 
             // virtual void addProperty(const string& name) = 0;
             virtual shared_ptr<void> createInstance() = 0;
+            virtual shared_ptr<void> createInstance(unsigned int id) = 0;
             virtual unsigned int getInstanceCount() = 0;
             virtual shared_ptr<void> find(unsigned int id) = 0;
             virtual bool update(unsigned int id, const string& property, const string& value) = 0;
@@ -95,11 +96,23 @@ namespace ofxCRUD {
             }
 
             virtual shared_ptr<void> createInstance(){
+                return createInstance(nextId);
+            }
+
+            virtual shared_ptr<void> createInstance(unsigned int id){
+                if(id < nextId){
+                    ofLogWarning() << "create instance with ID (" << id << ") lower than nextId; this might overwrite an existing instance";
+                }
+
                 // create
                 auto ref = make_shared<ResourceType>();
                 // store
-                instances[nextId] = ref;
-                nextId++;
+                instances[id] = ref;
+
+                // increment auto-index cuonter
+                if(id >= nextId)
+                    nextId = id+1;
+
                 // return
                 return ref;
             }

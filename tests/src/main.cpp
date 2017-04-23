@@ -78,6 +78,12 @@ class ofApp: public ofxUnitTestsApp{
                 // "/ofxCRUD/ImageNode/create/end"
                 test_eq(firstImageNodeRef == nullptr, false, ""); // not null
                 test_eq(firstImageNodeRef->getStatus(), "uninitialized", "");
+                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+                // perform update through OSC
+                ofxOscMessage oscMsg;
+                oscMsg.setAddress("/ofxCRUD/ImageNode/create/2");
+                manager.process(oscMsg);
+                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
             TEST_END
 
             TEST_START(UPDATE)
@@ -129,17 +135,17 @@ class ofApp: public ofxUnitTestsApp{
             TEST_START("DELETE")
                 // delete instance directly on resource definition
                 // (first create a new instance to remove)
-                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
-                shared_ptr<ImageNode> img2Ref = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
                 test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
+                shared_ptr<ImageNode> img2Ref = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
+                test_eq(imageNodeResDefRef->getInstanceCount(), 3, "");
                 imageNodeResDefRef->deleteInstance(imageNodeResDefRef->getIdFor(img2Ref));
-                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
 
                 // delete instance through OSC message
                 ofxOscMessage oscMsg;
                 oscMsg.setAddress("/ofxCRUD/ImageNode/delete/1/status");
                 manager.process(oscMsg);
-                test_eq(imageNodeResDefRef->getInstanceCount(), 0, "");
+                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
             TEST_END
         TEST_END
     }

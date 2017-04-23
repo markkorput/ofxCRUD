@@ -57,6 +57,16 @@ namespace ofxCRUD {
                     return;
                 }
 
+                if(parts[2] == "create"){
+                    // the create instruction also takes the ID of the new instance,
+                    // otherwise a create instruction would always require a response to
+                    // communicate the new ID to the caller. This is more efficient, plus
+                    // the caller is in charge of managing data coherently (and thus creating IDs)
+                    // "/ofxCRUD/ImageNode/create/1"
+                    resDefRef->createInstance(ofToInt(parts[3]));
+                    return;
+                }
+
                 if(parts[2] == "read"){
                     // request: "/ofxCRUD/ImageNode/read/1/status"
                     // response: "/ofxCRUD/ImageNode/update/1/status"

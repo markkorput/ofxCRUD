@@ -5,94 +5,133 @@
 
 namespace ofxCRUD {
 
-    class Actuator {
-    public:
-        void setParameters(ofParameterGroup* newParameters){
-            params = newParameters;
-        }
+    class BasePropertyDefinition {
+        public:
+            BasePropertyDefinition(){
+            }
 
-        const ofParameterGroup* getParameters(){
-            return params;
-        }
+            void setName(const string& newName){
+                name = newName;
+            }
 
-    private:
-        ofParameterGroup* params;
+            virtual void set(shared_ptr<void> subject, const string& value) = 0;
+            virtual const string& get(shared_ptr<void>) = 0;
+
+        private:
+            string name;
     };
 
     class BaseResourceDefinition {
-    protected:
-        string resourceType;
-        ofParameterGroup parameterGroup;
+        protected:
+            string resourceType;
 
-    public:
+        public:
+            const string& getResourceType(){
+                return resourceType;
+            }
 
-        BaseResourceDefinition(){
-            addProperty<int>("id");
-        }
-
-        const string& getResourceType(){
-            return resourceType;
-        }
-
-        const ofParameterGroup& getParameters(){
-            return parameterGroup;
-        }
-
-        template<typename PropType>
-        void addProperty(const string& name){
-            auto param = new ofParameter<PropType>();
-            param->setName(name);
-            parameterGroup.add(*param);
-        }
-
-        shared_ptr<void> createInstance(){
-            return nullptr;
-        }
-
-        virtual shared_ptr<void> find(unsigned int id) = 0;
+            // virtual void addProperty(const string& name) = 0;
+            virtual shared_ptr<void> createInstance() = 0;
+            virtual shared_ptr<void> find(unsigned int id) = 0;
+            virtual bool update(int id, const string& property, const string& value) = 0;
     };
-
 
     template<typename ResourceType>
     class ResourceDefinition : public BaseResourceDefinition {
 
-    public:
+            typedef std::function<const string& (ResourceType&)> PROP_GET_FUNC;
+            typedef std::function<void (ResourceType&, const string& value)> PROP_SET_FUNC;
 
-        ResourceDefinition() : nextId(1){
-        }
+            class PropertyDefinition : public BasePropertyDefinition {
+                public:
+                    void setup(const string& name, PROP_GET_FUNC getter, PROP_SET_FUNC setter){
+                        setName(name);
+                        getterFunc = getter;
+                        setterFunc = setter;
+                    }
 
-        void setResourceType(const string& newResourceType){
-            resourceType = newResourceType;
-        }
+                    virtual void set(shared_ptr<void> subject, const string& value){
+                        if(!setterFunc){
+                            ofLogWarning() << "no setter func, can't set property";
+                            return;
+                        }
 
-        shared_ptr<ResourceType> createInstance(){
-            // create
-            auto ref = make_shared<ResourceType>();
-            // store
-            instances[nextId] = ref;
-            nextId++;
-            // return
-            return ref;
-        }
+                        setterFunc(*static_pointer_cast<ResourceType>(subject).get(), value);
+                    }
 
-        virtual shared_ptr<void> find(unsigned int id){
-            auto it = instances.find(id);
-            if(it == instances.end())
-                return nullptr;
-            return it->second;
-        }
+                    virtual const string& get(shared_ptr<void>){
+                        string a = "tmp";
+                        return a;
+                    }
 
-        shared_ptr<Actuator> getActuator(shared_ptr<ResourceType>){
-            auto actuatorRef = make_shared<Actuator>();
-            actuatorRef->setParameters(&parameterGroup);
-        }
+                private:
+                    PROP_GET_FUNC getterFunc;
+                    PROP_SET_FUNC setterFunc;
+            };
 
-        void process(shared_ptr<ofxOscMessage> oscMsg){
+        public:
 
-        }
+            ResourceDefinition() : nextId(1){
+            }
 
-    private:
-        unsigned int nextId;
-        std::map<int, shared_ptr<ResourceType>> instances;
+            void setResourceType(const string& newResourceType){
+                resourceType = newResourceType;
+            }
+
+            void addProperty(const string& name,
+                PROP_GET_FUNC getterFunc = nullptr,
+                PROP_SET_FUNC setterFunc = nullptr){
+                auto propDef = make_shared<PropertyDefinition>();
+                propDef->setup(name, getterFunc, setterFunc);
+                propDefRefs[name] = propDef;
+            }
+
+            virtual shared_ptr<void> createInstance(){
+                // create
+                auto ref = make_shared<ResourceType>();
+                // store
+                instances[nextId] = ref;
+                nextId++;
+                // return
+                return ref;
+            }
+
+            virtual shared_ptr<void> find(unsigned int id){
+                auto it = instances.find(id);
+                if(it == instances.end())
+                    return nullptr;
+                return it->second;
+            }
+
+            shared_ptr<PropertyDefinition> findPropDef(const string& name){
+                auto it = propDefRefs.find(name);
+                if(it == propDefRefs.end())
+                    return nullptr;
+                return it->second;
+            }
+
+            virtual bool update(int id, const string& property, const string& value){
+                // get writer lambda, pass it the string
+                auto instanceRef = find(id);
+                if(!instanceRef){
+                    ofLogWarning() << "could not find instance with id: " << id;
+                    return false;
+                }
+
+                auto propDefRef = findPropDef(property);
+                if(!propDefRef){
+                    ofLogWarning() << "could not find property definition with name: " << property;
+                    return false;
+                }
+
+                propDefRef->set(instanceRef, value);
+
+                return true;
+            }
+
+        private:
+            unsigned int nextId;
+            std::map<string, shared_ptr<PropertyDefinition>> propDefRefs;
+            std::map<int, shared_ptr<ResourceType>> instances;
     };
 }

@@ -34,37 +34,25 @@ namespace ofxCRUD {
         void process(ofxOscMessage& msg){
             vector<string> parts = ofSplitString(msg.getAddress(), "/", true /*ignoreEmpty*/);
 
-            if(parts.size() < 3 || parts[0] != "ofxCRUD")
+            // is this an ofxCRUD message?
+            if(parts.size() < 4 || parts[0] != "ofxCRUD")
                 return;
 
+            // which resource are we dealing with
             for(auto resDefRef : definedResourceDefinitions){
                 if(parts[1] != resDefRef->getResourceType())
                     continue;
 
+
                 if(parts[2] == "update"){
-                    auto instanceVoidRef = resDefRef->find(ofToInt(parts[3]));
-                    if(instanceVoidRef == nullptr){
-                        ofLogWarning() << "could not find `"<<parts[1]<<"` instance with id: " << parts[3];
+                    // "/ofxCRUD/ImageNode/update/1/status", "new_value"
+
+                    if(parts.size() < 5){
+                        ofLogWarning() << "instance ID and/or property name missing from update message: " << msg.getAddress();
                         return;
                     }
 
-                    // activeInstanceRef
-                    auto pInstanceParamGroup = &resDefRef->getParameters();
-                    ofParameterGroup g1,g2,g3,g4;
-                    g1.setName(parts[0]);
-                    g2.setName(parts[1]); g1.add(g2);
-                    g3.setName(parts[2]); g2.add(g3);
-
-                    // change group name
-                    string tmp = pInstanceParamGroup->getName();
-                    pInstanceParamGroup->setName(parts[3]);
-                    g3.add(*pInstanceParamGroup);
-
-                    updateParameter(msg, g1);
-
-                    // restore
-                    pInstanceParamGroup->setName(tmp);
-                    g3.remove(*pInstanceParamGroup);
+                    resDefRef->update(ofToInt(parts[3]), parts[4], msg.getArgAsString(0));
                 }
             }
         }

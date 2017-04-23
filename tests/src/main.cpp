@@ -56,174 +56,57 @@ class ofApp: public ofxUnitTestsApp{
                 // def->addProperty<string>("file",                                    // property name
                 //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
                 //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
-                def.addProperty<string>("status",
+                def.addProperty("status",
                     [](ImageNode& node){ return node.status; },
-                    [](ImageNode& node, string& value){ return node.status = value; });
-                def.addProperty<ofVec3f>("position");
-                def.addProperty<ofVec3f>("scale");
+                    [](ImageNode& node, const string& value){ return node.status = value; });
+                def.addProperty("position");
+                def.addProperty("scale");
             });
-
 
             TEST_START(Manager::defineResource)
                 test_eq(manager.getResourceDefinitions().size(), 1, "");
                 test_eq(manager.getResourceDefinitions()[0]->getResourceType(), "ImageNode", "");
-
-                // first property is an int-based ID, always added at instantiation
-                test_eq(resDefRef->getParameters().getType(0), typeid(ofParameter<int>).name(), "");
-                test_eq(resDefRef->getParameters().getType(1), typeid(ofParameter<string>).name(), "");
-                test_eq(resDefRef->getParameters().getType(2), typeid(ofParameter<ofVec3f>).name(), "");
-                test_eq(resDefRef->getParameters().getType(3), typeid(ofParameter<ofVec3f>).name(), "");
-                test_eq(resDefRef->getParameters().getName(0), "id", "");
-                test_eq(resDefRef->getParameters().getName(1), "status", "");
-                test_eq(resDefRef->getParameters().getName(2), "position", "");
-                test_eq(resDefRef->getParameters().getName(3), "scale", "");
             TEST_END
 
-            shared_ptr<ImageNode> firstImageNodeRef = resDefRef->createInstance();
-            TEST_START(CREATE)
+            // fetch resource definition by resourceType name
+            auto imageNodeResDefRef = manager.getResourceDefinition("ImageNode");
+            // generate a new instance of that type
+            shared_ptr<ImageNode> firstImageNodeRef = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
 
+            TEST_START(CREATE)
                 // "/ofxCRUD/ImageNode/create/start"
                 // "/ofxCRUD/ImageNode/create/status", 2
                 // "/ofxCRUD/ImageNode/create/position", 2,4,3
                 // "/ofxCRUD/ImageNode/create/scale", 1,1,1
                 // "/ofxCRUD/ImageNode/create/end"
-
-                test_eq(firstImageNodeRef == nullptr, false, "");
+                test_eq(firstImageNodeRef == nullptr, false, ""); // not null
                 test_eq(firstImageNodeRef->getStatus(), "uninitialized", "");
             TEST_END
 
             TEST_START(UPDATE)
-                auto resDefRef = manager.getResourceDefinition("ImageNode");
-                shared_ptr<void> voidRef = resDefRef->find(123); // 1 is default first id
-
                 // find existing instance; failure
+                shared_ptr<void> voidRef = imageNodeResDefRef->find(123);
                 test_eq(voidRef == nullptr, true,  "");
                 // find existing instance; success
-                voidRef = resDefRef->find(1); // 1 is default first id
-                test_eq(voidRef == nullptr, false,  "");
-                test_eq(static_pointer_cast<ImageNode>(voidRef), firstImageNodeRef,  "");
+                shared_ptr<ImageNode> imgRef = static_pointer_cast<ImageNode>(imageNodeResDefRef->find(1)); // 1 is default first id
+                test_eq(imgRef == nullptr, false,  "");
+                test_eq(imgRef, firstImageNodeRef,  "");
 
-                shared_ptr<ofParameterGroup> params = resDefRef->getInstanceParameters(1);
-                params->getString("status").set("updated!");
-                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "updated!", "");
+                // perform update directly on resource definition
+                imageNodeResDefRef->update(1 /* id */, "status" /* property */, "update1");
+                test_eq(imgRef->status, "update1", "");
 
-                // "/ofxCRUD/ImageNode/update/1/start"
-                // "/ofxCRUD/ImageNode/update/1/status", 2
-                // "/ofxCRUD/ImageNode/update/1/position", 2,4,3
-                // "/ofxCRUD/ImageNode/update/1/scale", 1,1,1
-                // "/ofxCRUD/ImageNode/update/1/end"
-
-                // still has original value
-                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "uninitialized", "");
-                string s = resDefRef->getParameters().getString("status").get();
-                test_eq(s, "", "");
-
-                // perform update
+                // perform update through OSC
+                // "/ofxCRUD/ImageNode/update/1/status", "new_value"
                 ofxOscMessage oscMsg;
-                // oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/start");
-                // manager.process(oscMsg);
-                // oscMsg.clear();
                 oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/status");
-                oscMsg.addStringArg("init-ed");
+                oscMsg.addStringArg("update2");
                 manager.process(oscMsg);
-                // oscMsg.clear();
-                // oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/end");
-                // manager.process(oscMsg);
 
-                // check if the resource definition's status params was updated
-                s = resDefRef->getParameters().getString("status").get();
-                test_eq(s, "init-ed", "");
                 // check if the param's change was propagated to the node's attribute
-                test_eq(static_pointer_cast<ImageNode>(voidRef)->status, "init-ed", "");
+                test_eq(imgRef->status, "update2", "");
             TEST_END
         TEST_END
-
-
-            //
-            // auto ref = make_shared<Facade>();
-            //
-            // template<typename T>
-            // ref->setCreate([](){
-            //     return make_shared<T>();
-            // })
-            //
-            // class ResourceDefinition {
-            //     void process(OperationData data){
-            //         if(action == "create")
-            //             create(data)
-            //         else if(...)
-            //             //...
-            //     }
-            //
-            //     void doCreate(OperationData data){
-            //         // instantiate
-            //         shared_ptr<void> instance = createLambda(data);
-            //         setInstance(instance); // this
-            //
-            //         // update writes to internal paramGroup, which in turn should trigger
-            //         // the write callbacks registered uing addProperty calls
-            //         update(data);
-            //
-            //         list.push_back(instance);
-            //     }
-            //
-            //     void doRead(OperationData data){
-            //         auto ref = findById(data.getId());
-            //         if(ref == nullptr){
-            //             // 404 WARNING
-            //             return;
-            //         }
-            //
-            //         setInstance(ref);
-            //         serializeParams();
-            //     }
-            //
-            //     void doUpdate(OperationData data){
-            //         auto ref = findById(data.getId());
-            //         if(ref == nullptr){
-            //             // 404 WARNING
-            //             return;
-            //         }
-            //
-            //         setInstance(ref);
-            //         deserializeParams();
-            //     }
-            //
-            //     void doDelete(OperationData data){
-            //         shared_ptr<void> ref = findById(data.getId());
-            //         if(ref == nullptr){
-            //             // 404 WARNING
-            //             return;
-            //         }
-            //
-            //         list.remove(ref);
-            //     }
-
-
-
-            // }
-
-            // incoming operation data (basically an ofParam set);
-            // {action<string>: "create"
-            // resourceName<string>: "ImageNode"
-            // attributes: {
-            //   position<string>: "0.0,1.0,10.0",
-            //   status<string>: "1"
-            // }
-
-            // if(data.resourceName == "ImageNode"){
-            //     auto opRef = make_shared<ResourceManager<ImageNode>>();
-            //     opRef->processData(data);
-            // } else if(data.resourceName == "TextNode"){
-            //     auto opRef = make_shared<ResourceManager<ImageNode>>();
-            //     opRef->processData(data);
-            // }
-            //
-            // for(auto definitionRef : knownDefinitions){
-            //     if(definitionRef.resourceName == operationData.resourceName){
-            //         definitionRef.process(operationData);
-            //     }
-            // }
     }
 };
 

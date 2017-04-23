@@ -29,7 +29,7 @@ namespace ofxCRUD {
             auto param = new ofParameter<PropType>();
             param->setName(name);
             parameterGroup.add(*param);
-            return param;
+            return *param;
         }
 
         shared_ptr<void> createInstance(){

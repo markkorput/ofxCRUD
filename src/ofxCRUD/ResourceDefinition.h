@@ -32,10 +32,7 @@ namespace ofxCRUD {
             return *param;
         }
 
-        shared_ptr<void> createInstance(){
-            return nullptr;
-        }
-
+        virtual shared_ptr<void> createInstance() = 0;
         virtual shared_ptr<void> find(unsigned int id) = 0;
         virtual shared_ptr<ofParameterGroup> getInstanceParameters(int id) = 0;
     };
@@ -65,7 +62,7 @@ namespace ofxCRUD {
             resourceType = newResourceType;
         }
 
-        shared_ptr<ResourceType> createInstance(){
+        virtual shared_ptr<void> createInstance(){
             // create
             auto ref = make_shared<ResourceType>();
             // store

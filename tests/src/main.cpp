@@ -79,16 +79,17 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(resDefRef->getParameters().getName(3), "scale", "");
             TEST_END
 
-            shared_ptr<ImageNode> firstImageNodeRef = resDefRef->createInstance();
-            TEST_START(CREATE)
+            // fetch resource definition by resourceType name
+            auto imageNodeResDefRef = manager.getResourceDefinition("ImageNode");
+            shared_ptr<ImageNode> firstImageNodeRef = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
 
+            TEST_START(CREATE)
                 // "/ofxCRUD/ImageNode/create/start"
                 // "/ofxCRUD/ImageNode/create/status", 2
                 // "/ofxCRUD/ImageNode/create/position", 2,4,3
                 // "/ofxCRUD/ImageNode/create/scale", 1,1,1
                 // "/ofxCRUD/ImageNode/create/end"
-
-                test_eq(firstImageNodeRef == nullptr, false, "");
+                test_eq((bool)firstImageNodeRef, true, ""); // not null
                 test_eq(firstImageNodeRef->getStatus(), "uninitialized", "");
             TEST_END
 

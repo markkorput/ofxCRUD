@@ -53,9 +53,6 @@ class ofApp: public ofxUnitTestsApp{
             auto resDefRef = manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
                 def.setResourceType("ImageNode");
                 // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
-                // def->addProperty<string>("file",                                    // property name
-                //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
-                //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
                 def.addProperty("status",
                     [](ImageNode& node){ return node.status; },
                     [](ImageNode& node, const string& value){ return node.status = value; });
@@ -105,6 +102,11 @@ class ofApp: public ofxUnitTestsApp{
 
                 // check if the param's change was propagated to the node's attribute
                 test_eq(imgRef->status, "update2", "");
+            TEST_END
+
+            TEST_START("READ")
+                string value = imageNodeResDefRef->read(1, "status");
+                test_eq(value, "update2", "");
             TEST_END
         TEST_END
     }

@@ -31,6 +31,11 @@ void ofApp::setup(){
 }
 
 void ofApp::draw(){
+    auto resource = crudManager.getResourceDefinition<ImageNode>("ImageNode");
+    auto instances = resource->getInstances();
+    for(auto imageNodeRef : instances){
+        imageNodeRef.second->draw();
+    }
 }
 
 //--------------------------------------------------------------

@@ -167,6 +167,10 @@ namespace ofxCRUD {
                 return propDefRef->get(instanceRef);
             }
 
+            const std::map<unsigned int, shared_ptr<ResourceType>>& getInstances(){
+                return instances;
+            }
+
             virtual unsigned int getInstanceCount(){
                 return instances.size();
             }

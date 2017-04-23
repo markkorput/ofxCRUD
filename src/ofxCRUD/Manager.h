@@ -33,6 +33,11 @@ namespace ofxCRUD {
             return nullptr;
         }
 
+        template<typename ResourceType>
+        shared_ptr<ResourceDefinition<ResourceType>> getResourceDefinition(const string& resourceType){
+            return static_pointer_cast<ResourceDefinition<ResourceType>>(getResourceDefinition(resourceType));
+        }
+
         void process(ofxOscMessage& msg){
             vector<string> parts = ofSplitString(msg.getAddress(), "/", true /*ignoreEmpty*/);
 

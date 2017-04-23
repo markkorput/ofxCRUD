@@ -123,9 +123,7 @@ class ofApp: public ofxUnitTestsApp{
                 manager.process(oscMsg);
 
                 test_eq(responseAddr, "/ofxCRUD/ImageNode/update/1/status", "");
-                test_eq(responseAddr, "update2", "");
-
-
+                test_eq(responseValue, "update2", "");
             TEST_END
         TEST_END
     }

@@ -45,7 +45,6 @@ namespace ofxCRUD {
                 if(parts[1] != resDefRef->getResourceType())
                     continue;
 
-
                 if(parts[2] == "update"){
                     // "/ofxCRUD/ImageNode/update/1/status", "new_value"
 
@@ -55,6 +54,23 @@ namespace ofxCRUD {
                     }
 
                     resDefRef->update(ofToInt(parts[3]), parts[4], msg.getArgAsString(0));
+                }
+
+                if(parts[2] == "read"){
+                    // request: "/ofxCRUD/ImageNode/read/1/status"
+                    // response: "/ofxCRUD/ImageNode/update/1/status"
+                    if(parts.size() < 5){
+                        ofLogWarning() << "instance ID and/or property name missing from update message: " << msg.getAddress();
+                        return;
+                    }
+
+                    string value = resDefRef->read(ofToInt(parts[3]), parts[4]);
+                    ofLogWarning() << "TODO reply-connection construct";
+
+                    ofxOscMessage replyMsg;
+                    replyMsg.setAddress("/ofxCRUD/"+parts[1]+"/update/"+parts[3]+"/"+parts[4]);
+                    replyMsg.addStringArg(value);
+                    responseMessageEvent.notifyListeners(replyMsg);
                 }
             }
         }

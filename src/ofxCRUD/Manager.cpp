@@ -74,6 +74,7 @@ void Manager::process(ofxOscMessage& msg){
                 return;
             }
 
+            //ofLog() << "osc-out: " << replyMsg.getAddress() + " with: " + replyMsg.getArgAsString(0);
             oscSender.setup(parts[5], ofToInt(parts[6]));
             oscSender.sendMessage(replyMsg);
             return;

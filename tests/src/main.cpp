@@ -134,6 +134,12 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
                 imageNodeResDefRef->deleteInstance(imageNodeResDefRef->getIdFor(img2Ref));
                 test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+
+                // delete instance through OSC message
+                ofxOscMessage oscMsg;
+                oscMsg.setAddress("/ofxCRUD/ImageNode/delete/1/status");
+                manager.process(oscMsg);
+                test_eq(imageNodeResDefRef->getInstanceCount(), 0, "");
             TEST_END
         TEST_END
     }

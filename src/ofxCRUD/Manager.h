@@ -54,6 +54,7 @@ namespace ofxCRUD {
                     }
 
                     resDefRef->update(ofToInt(parts[3]), parts[4], msg.getArgAsString(0));
+                    return;
                 }
 
                 if(parts[2] == "read"){
@@ -71,6 +72,12 @@ namespace ofxCRUD {
                     replyMsg.setAddress("/ofxCRUD/"+parts[1]+"/update/"+parts[3]+"/"+parts[4]);
                     replyMsg.addStringArg(value);
                     responseMessageEvent.notifyListeners(replyMsg);
+                    return;
+                }
+
+                if(parts[2] == "delete"){
+                    resDefRef->deleteInstance(ofToInt(parts[3]));
+                    return;
                 }
             }
         }

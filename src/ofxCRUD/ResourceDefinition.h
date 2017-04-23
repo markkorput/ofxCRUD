@@ -32,9 +32,12 @@ namespace ofxCRUD {
 
             // virtual void addProperty(const string& name) = 0;
             virtual shared_ptr<void> createInstance() = 0;
+            virtual unsigned int getInstanceCount() = 0;
             virtual shared_ptr<void> find(unsigned int id) = 0;
-            virtual bool update(int id, const string& property, const string& value) = 0;
-            virtual const string& read(int id, const string& property) = 0;
+            virtual bool update(unsigned int id, const string& property, const string& value) = 0;
+            virtual const string& read(unsigned int id, const string& property) = 0;
+            virtual void deleteInstance(unsigned int id) = 0;
+            virtual unsigned int getIdFor(shared_ptr<void> instance) = 0;
     };
 
     template<typename ResourceType>
@@ -115,7 +118,7 @@ namespace ofxCRUD {
                 return it->second;
             }
 
-            virtual bool update(int id, const string& property, const string& value){
+            virtual bool update(unsigned int id, const string& property, const string& value){
                 // get writer lambda, pass it the string
                 auto instanceRef = find(id);
                 if(!instanceRef){
@@ -134,7 +137,7 @@ namespace ofxCRUD {
                 return true;
             }
 
-            virtual const string& read(int id, const string& property){
+            virtual const string& read(unsigned int id, const string& property){
                 // get writer lambda, pass it the string
                 auto instanceRef = find(id);
                 if(!instanceRef){
@@ -151,9 +154,27 @@ namespace ofxCRUD {
                 return propDefRef->get(instanceRef);
             }
 
+            virtual unsigned int getInstanceCount(){
+                return instances.size();
+            }
+
+            virtual void deleteInstance(unsigned int id){
+                instances.erase(id);
+            }
+
+            virtual unsigned int getIdFor(shared_ptr<void> instance){
+                shared_ptr<ResourceType> subject = static_pointer_cast<ResourceType>(instance);
+                for(auto it = instances.begin(); it != instances.end(); it++){
+                    if(it->second == subject)
+                        return it->first;
+                }
+
+                return 0; // zero is an invalid ID
+            }
+
         private:
             unsigned int nextId;
             std::map<string, shared_ptr<PropertyDefinition>> propDefRefs;
-            std::map<int, shared_ptr<ResourceType>> instances;
+            std::map<unsigned int, shared_ptr<ResourceType>> instances;
     };
 }

@@ -125,6 +125,16 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(responseAddr, "/ofxCRUD/ImageNode/update/1/status", "");
                 test_eq(responseValue, "update2", "");
             TEST_END
+
+            TEST_START("DELETE")
+                // delete instance directly on resource definition
+                // (first create a new instance to remove)
+                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+                shared_ptr<ImageNode> img2Ref = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
+                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
+                imageNodeResDefRef->deleteInstance(imageNodeResDefRef->getIdFor(img2Ref));
+                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+            TEST_END
         TEST_END
     }
 };

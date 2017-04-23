@@ -166,6 +166,18 @@ namespace ofxCRUD {
             return false;
         }
 
+        void setupOscReceiver(int port){
+            oscReceiver.setup(port);
+        }
+
+        void update(){
+            while(oscReceiver.hasWaitingMessages()){
+                ofxOscMessage msg;
+                oscReceiver.getNextMessage(msg);
+                process(msg);
+            }
+        }
+
     public: // events
 
         LambdaEvent<ofxOscMessage> responseMessageEvent;
@@ -174,6 +186,7 @@ namespace ofxCRUD {
 
         std::vector<shared_ptr<BaseResourceDefinition>> definedResourceDefinitions;
         shared_ptr<void> activeInstanceRef;
+        ofxOscReceiver oscReceiver;
     };
 
 

@@ -11,6 +11,7 @@ class ofApp : public ofBaseApp{
 
 public:
     void setup();
+    void update();
     void draw();
 
 private: // attributes
@@ -28,6 +29,12 @@ void ofApp::setup(){
 
     // register CRUD resource(s)
     ImageNode::registerCrud(crudManager);
+
+    crudManager.setupOscReceiver(8080);
+}
+
+void ofApp::update(){
+    crudManager.update();
 }
 
 void ofApp::draw(){

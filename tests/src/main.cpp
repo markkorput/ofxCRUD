@@ -49,26 +49,27 @@ class ofApp: public ofxUnitTestsApp{
             // Add/Define a resouce
             ofxCRUD::Manager manager;
 
-            test_eq(manager.getResourceDefinitions().size(), 0, "");
-            auto resDefRef = manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
-                def.setResourceType("ImageNode");
-                // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
-                def.addProperty("status",
-                    [](ImageNode& node){ return node.status; },
-                    [](ImageNode& node, const string& value){ return node.status = value; });
-                def.addProperty("position");
-                def.addProperty("scale");
-            });
 
-            TEST_START(Manager::defineResource)
-                test_eq(manager.getResourceDefinitions().size(), 1, "");
-                test_eq(manager.getResourceDefinitions()[0]->getResourceType(), "ImageNode", "");
+            TEST_START(Manager::createResource)
+                test_eq(manager.getResources().size(), 0, "");
+                auto resRef = manager.createResource<ImageNode>([](Resource<ImageNode>& def){
+                    def.setName("ImageNode");
+                    // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
+                    def.addProperty("status",
+                        [](ImageNode& node){ return node.status; },
+                        [](ImageNode& node, const string& value){ return node.status = value; });
+                    def.addProperty("position");
+                    def.addProperty("scale");
+                });
+
+                test_eq(manager.getResources().size(), 1, "");
+                test_eq(manager.getResources()[0]->getName(), "ImageNode", "");
             TEST_END
 
-            // fetch resource definition by resourceType name
-            auto imageNodeResDefRef = manager.getResourceDefinition("ImageNode");
+            // fetch resource by name
+            auto resourceRef = manager.getResource("ImageNode");
             // generate a new instance of that type
-            shared_ptr<ImageNode> firstImageNodeRef = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
+            shared_ptr<ImageNode> firstImageNodeRef = static_pointer_cast<ImageNode>(resourceRef->createInstance());
 
             TEST_START(CREATE)
                 // "/ofxCRUD/ImageNode/create/start"
@@ -78,25 +79,25 @@ class ofApp: public ofxUnitTestsApp{
                 // "/ofxCRUD/ImageNode/create/end"
                 test_eq(firstImageNodeRef == nullptr, false, ""); // not null
                 test_eq(firstImageNodeRef->getStatus(), "uninitialized", "");
-                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+                test_eq(resourceRef->getInstanceCount(), 1, "");
                 // perform update through OSC
                 ofxOscMessage oscMsg;
                 oscMsg.setAddress("/ofxCRUD/ImageNode/create/2");
                 manager.process(oscMsg);
-                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
+                test_eq(resourceRef->getInstanceCount(), 2, "");
             TEST_END
 
             TEST_START(UPDATE)
                 // find existing instance; failure
-                shared_ptr<void> voidRef = imageNodeResDefRef->find(123);
+                shared_ptr<void> voidRef = resourceRef->find(123);
                 test_eq(voidRef == nullptr, true,  "");
                 // find existing instance; success
-                shared_ptr<ImageNode> imgRef = static_pointer_cast<ImageNode>(imageNodeResDefRef->find(1)); // 1 is default first id
+                shared_ptr<ImageNode> imgRef = static_pointer_cast<ImageNode>(resourceRef->find(1)); // 1 is default first id
                 test_eq(imgRef == nullptr, false,  "");
                 test_eq(imgRef, firstImageNodeRef,  "");
 
                 // perform update directly on resource definition
-                imageNodeResDefRef->update(1 /* id */, "status" /* property */, "update1");
+                resourceRef->update(1 /* id */, "status" /* property */, "update1");
                 test_eq(imgRef->status, "update1", "");
 
                 // perform update through OSC
@@ -111,7 +112,7 @@ class ofApp: public ofxUnitTestsApp{
 
             TEST_START("READ")
                 // read from resource definition
-                string value = imageNodeResDefRef->read(1, "status");
+                string value = resourceRef->read(1, "status");
                 test_eq(value, "update2", "");
 
                 // request attribute through oscMessage
@@ -135,17 +136,17 @@ class ofApp: public ofxUnitTestsApp{
             TEST_START("DELETE")
                 // delete instance directly on resource definition
                 // (first create a new instance to remove)
-                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
-                shared_ptr<ImageNode> img2Ref = static_pointer_cast<ImageNode>(imageNodeResDefRef->createInstance());
-                test_eq(imageNodeResDefRef->getInstanceCount(), 3, "");
-                imageNodeResDefRef->deleteInstance(imageNodeResDefRef->getIdFor(img2Ref));
-                test_eq(imageNodeResDefRef->getInstanceCount(), 2, "");
+                test_eq(resourceRef->getInstanceCount(), 2, "");
+                shared_ptr<ImageNode> img2Ref = static_pointer_cast<ImageNode>(resourceRef->createInstance());
+                test_eq(resourceRef->getInstanceCount(), 3, "");
+                resourceRef->deleteInstance(img2Ref);
+                test_eq(resourceRef->getInstanceCount(), 2, "");
 
                 // delete instance through OSC message
                 ofxOscMessage oscMsg;
                 oscMsg.setAddress("/ofxCRUD/ImageNode/delete/1/status");
                 manager.process(oscMsg);
-                test_eq(imageNodeResDefRef->getInstanceCount(), 1, "");
+                test_eq(resourceRef->getInstanceCount(), 1, "");
             TEST_END
         TEST_END
     }

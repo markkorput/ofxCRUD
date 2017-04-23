@@ -181,7 +181,8 @@ namespace ofxCRUD {
                 return it->second;
             }
 
-        private:
+        private: // attributes
+
             unsigned int nextId;
             std::map<string, shared_ptr<PropertyDefinition>> properties;
             std::map<unsigned int, shared_ptr<ResourceType>> instances;

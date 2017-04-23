@@ -87,7 +87,7 @@ namespace ofxCRUD {
 
             virtual shared_ptr<void> createInstance(unsigned int id){
                 if(id < nextId){
-                    ofLogWarning() << "create instance with ID (" << id << ") lower than nextId; this might overwrite an existing instance";
+                    ofLogWarning() << "create instance with ID (" << id << ") lower than nextId; this might very well overwrite an existing instance";
                 }
 
                 // create

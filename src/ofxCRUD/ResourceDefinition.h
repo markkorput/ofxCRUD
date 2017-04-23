@@ -39,8 +39,17 @@ namespace ofxCRUD {
     template<typename ResourceType>
     class ResourceDefinition : public BaseResourceDefinition {
 
+            typedef std::function<const string& (ResourceType&)> PROP_GET_FUNC;
+            typedef std::function<void (ResourceType&, const string& value)> PROP_SET_FUNC;
+
             class PropertyDefinition : public BasePropertyDefinition {
                 public:
+                    void setup(const string& name, PROP_GET_FUNC getter, PROP_SET_FUNC setter){
+                        setName(name);
+                        getterFunc = getter;
+                        setterFunc = setter;
+                    }
+
                     virtual void set(shared_ptr<void> subject, const string& value){
 
                     }
@@ -51,8 +60,8 @@ namespace ofxCRUD {
                     }
 
                 private:
-                    std::function<const string& (ResourceType&)> getterFunc;
-                    std::function<void (ResourceType&, const string& value)> setterFunc;
+                    PROP_GET_FUNC getterFunc;
+                    PROP_SET_FUNC setterFunc;
             };
 
         public:
@@ -65,9 +74,11 @@ namespace ofxCRUD {
             }
 
             void addProperty(const string& name,
-                std::function<const string& (ResourceType&)> getterFunc = nullptr,
-                std::function<void (ResourceType&, const string& value)> setterFunc = nullptr){
-                // return BaseResourceDefinition::addProperty<PropType>(name);
+                PROP_GET_FUNC getterFunc = nullptr,
+                PROP_SET_FUNC setterFunc = nullptr){
+                auto propDef = make_shared<PropertyDefinition>();
+                propDef->setup(name, getterFunc, setterFunc);
+                propDefs[name] = propDef;
             }
 
             virtual shared_ptr<void> createInstance(){
@@ -93,6 +104,7 @@ namespace ofxCRUD {
 
         private:
             unsigned int nextId;
+            std::map<string, shared_ptr<PropertyDefinition>> propDefs;
             std::map<int, shared_ptr<ResourceType>> instances;
     };
 }

@@ -51,7 +51,12 @@ namespace ofxCRUD {
                     }
 
                     virtual void set(shared_ptr<void> subject, const string& value){
+                        if(!setterFunc){
+                            ofLogWarning() << "no setter func, can't set property";
+                            return;
+                        }
 
+                        setterFunc(*static_pointer_cast<ResourceType>(subject).get(), value);
                     }
 
                     virtual const string& get(shared_ptr<void>){
@@ -78,7 +83,7 @@ namespace ofxCRUD {
                 PROP_SET_FUNC setterFunc = nullptr){
                 auto propDef = make_shared<PropertyDefinition>();
                 propDef->setup(name, getterFunc, setterFunc);
-                propDefs[name] = propDef;
+                propDefRefs[name] = propDef;
             }
 
             virtual shared_ptr<void> createInstance(){
@@ -98,13 +103,35 @@ namespace ofxCRUD {
                 return it->second;
             }
 
+            shared_ptr<PropertyDefinition> findPropDef(const string& name){
+                auto it = propDefRefs.find(name);
+                if(it == propDefRefs.end())
+                    return nullptr;
+                return it->second;
+            }
+
             virtual bool update(int id, const string& property, const string& value){
                 // get writer lambda, pass it the string
+                auto instanceRef = find(id);
+                if(!instanceRef){
+                    ofLogWarning() << "could not find instance with id: " << id;
+                    return false;
+                }
+
+                auto propDefRef = findPropDef(property);
+                if(!propDefRef){
+                    ofLogWarning() << "could not find property definition with name: " << property;
+                    return false;
+                }
+
+                propDefRef->set(instanceRef, value);
+
+                return true;
             }
 
         private:
             unsigned int nextId;
-            std::map<string, shared_ptr<PropertyDefinition>> propDefs;
+            std::map<string, shared_ptr<PropertyDefinition>> propDefRefs;
             std::map<int, shared_ptr<ResourceType>> instances;
     };
 }

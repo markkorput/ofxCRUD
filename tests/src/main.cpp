@@ -56,26 +56,16 @@ class ofApp: public ofxUnitTestsApp{
                 // def->addProperty<string>("file",                                    // property name
                 //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
                 //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
-                def.addProperty<string>("status",
+                def.addProperty("status",
                     [](ImageNode& node){ return node.status; },
-                    [](ImageNode& node, string& value){ return node.status = value; });
-                def.addProperty<ofVec3f>("position");
-                def.addProperty<ofVec3f>("scale");
+                    [](ImageNode& node, const string& value){ return node.status = value; });
+                def.addProperty("position");
+                def.addProperty("scale");
             });
 
             TEST_START(Manager::defineResource)
                 test_eq(manager.getResourceDefinitions().size(), 1, "");
                 test_eq(manager.getResourceDefinitions()[0]->getResourceType(), "ImageNode", "");
-
-                // first property is an int-based ID, always added at instantiation
-                test_eq(resDefRef->getParameters().getType(0), typeid(ofParameter<int>).name(), "");
-                test_eq(resDefRef->getParameters().getType(1), typeid(ofParameter<string>).name(), "");
-                test_eq(resDefRef->getParameters().getType(2), typeid(ofParameter<ofVec3f>).name(), "");
-                test_eq(resDefRef->getParameters().getType(3), typeid(ofParameter<ofVec3f>).name(), "");
-                test_eq(resDefRef->getParameters().getName(0), "id", "");
-                test_eq(resDefRef->getParameters().getName(1), "status", "");
-                test_eq(resDefRef->getParameters().getName(2), "position", "");
-                test_eq(resDefRef->getParameters().getName(3), "scale", "");
             TEST_END
 
             // fetch resource definition by resourceType name

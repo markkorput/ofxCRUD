@@ -5,100 +5,94 @@
 
 namespace ofxCRUD {
 
-    class BaseResourceDefinition {
-    protected:
-        string resourceType;
-        ofParameterGroup parameterGroup;
+    class BasePropertyDefinition {
+        public:
+            BasePropertyDefinition(){
+            }
 
-    public:
+            void setName(const string& newName){
+                name = newName;
+            }
 
-        BaseResourceDefinition(){
-            addProperty<int>("id");
-        }
+            virtual void set(shared_ptr<void> subject, const string& value) = 0;
+            virtual const string& get(shared_ptr<void>) = 0;
 
-        const string& getResourceType(){
-            return resourceType;
-        }
-
-        ofParameterGroup& getParameters(){
-            return parameterGroup;
-        }
-
-        template<typename PropType>
-        ofParameter<PropType>& addProperty(const string& name){
-            auto param = new ofParameter<PropType>();
-            param->setName(name);
-            parameterGroup.add(*param);
-            return *param;
-        }
-
-        virtual shared_ptr<void> createInstance() = 0;
-        virtual shared_ptr<void> find(unsigned int id) = 0;
-        virtual shared_ptr<ofParameterGroup> getInstanceParameters(int id) = 0;
+        private:
+            string name;
     };
 
+    class BaseResourceDefinition {
+        protected:
+            string resourceType;
+
+        public:
+            const string& getResourceType(){
+                return resourceType;
+            }
+
+            // virtual void addProperty(const string& name) = 0;
+            virtual shared_ptr<void> createInstance() = 0;
+            virtual shared_ptr<void> find(unsigned int id) = 0;
+            virtual bool update(int id, const string& property, const string& value) = 0;
+    };
 
     template<typename ResourceType>
     class ResourceDefinition : public BaseResourceDefinition {
 
-        class InstanceParameterGroup : public ofParameterGroup {
+            class PropertyDefinition : public BasePropertyDefinition {
+                public:
+                    virtual void set(shared_ptr<void> subject, const string& value){
+
+                    }
+
+                    virtual const string& get(shared_ptr<void>){
+                        string a = "tmp";
+                        return a;
+                    }
+
+                private:
+                    std::function<const string& (ResourceType&)> getterFunc;
+                    std::function<void (ResourceType&, const string& value)> setterFunc;
+            };
+
         public:
-            void setup(shared_ptr<ResourceType> instance, ofParameterGroup& sourceParams){
-                this->instance = instance;
-                this->sourceParams = &sourceParams;
+
+            ResourceDefinition() : nextId(1){
+            }
+
+            void setResourceType(const string& newResourceType){
+                resourceType = newResourceType;
+            }
+
+            void addProperty(const string& name,
+                std::function<const string& (ResourceType&)> getterFunc = nullptr,
+                std::function<void (ResourceType&, const string& value)> setterFunc = nullptr){
+                // return BaseResourceDefinition::addProperty<PropType>(name);
+            }
+
+            virtual shared_ptr<void> createInstance(){
+                // create
+                auto ref = make_shared<ResourceType>();
+                // store
+                instances[nextId] = ref;
+                nextId++;
+                // return
+                return ref;
+            }
+
+            virtual shared_ptr<void> find(unsigned int id){
+                auto it = instances.find(id);
+                if(it == instances.end())
+                    return nullptr;
+                return it->second;
+            }
+
+            virtual bool update(int id, const string& property, const string& value){
+                // get writer lambda, pass it the string
             }
 
         private:
-            shared_ptr<ResourceType> instance;
-            ofParameterGroup* sourceParams;
-        };
-
-    public:
-
-        ResourceDefinition() : nextId(1){
-        }
-
-        void setResourceType(const string& newResourceType){
-            resourceType = newResourceType;
-        }
-
-        virtual shared_ptr<void> createInstance(){
-            // create
-            auto ref = make_shared<ResourceType>();
-            // store
-            instances[nextId] = ref;
-            nextId++;
-            // return
-            return ref;
-        }
-
-        virtual shared_ptr<void> find(unsigned int id){
-            auto it = instances.find(id);
-            if(it == instances.end())
-                return nullptr;
-            return it->second;
-        }
-
-        template<typename PropType>
-        ofParameter<PropType>& addProperty(const string& name,
-            std::function<const PropType& (ResourceType&)> getterFunc = nullptr,
-            std::function<void (ResourceType&, PropType& value)> setterFunc = nullptr){
-            return BaseResourceDefinition::addProperty<PropType>(name);
-        }
-
-        virtual shared_ptr<ofParameterGroup> getInstanceParameters(int id){
-            auto instanceParams = make_shared<InstanceParameterGroup>();
-            return instanceParams;
-        }
-
-        //
-        // shared_ptr<Actuator> getActuator(shared_ptr<ResourceType>){
-        //     auto actuatorRef = make_shared<Actuator>();
-        //     actuatorRef->setParameters(&parameterGroup);
-        // }
-
-    private:
-        unsigned int nextId;
-        std::map<int, shared_ptr<ResourceType>> instances;
+            unsigned int nextId;
+            std::map<int, shared_ptr<ResourceType>> instances;
     };
 }

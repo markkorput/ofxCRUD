@@ -48,23 +48,23 @@ namespace ofxCRUD {
                         return;
                     }
 
-                    // activeInstanceRef
-                    auto pInstanceParamGroup = &resDefRef->getParameters();
-                    ofParameterGroup g1,g2,g3,g4;
-                    g1.setName(parts[0]);
-                    g2.setName(parts[1]); g1.add(g2);
-                    g3.setName(parts[2]); g2.add(g3);
-
-                    // change group name
-                    string tmp = pInstanceParamGroup->getName();
-                    pInstanceParamGroup->setName(parts[3]);
-                    g3.add(*pInstanceParamGroup);
-
-                    updateParameter(msg, g1);
-
-                    // restore
-                    pInstanceParamGroup->setName(tmp);
-                    g3.remove(*pInstanceParamGroup);
+                    // // activeInstanceRef
+                    // auto pInstanceParamGroup = &resDefRef->getParameters();
+                    // ofParameterGroup g1,g2,g3,g4;
+                    // g1.setName(parts[0]);
+                    // g2.setName(parts[1]); g1.add(g2);
+                    // g3.setName(parts[2]); g2.add(g3);
+                    //
+                    // // change group name
+                    // string tmp = pInstanceParamGroup->getName();
+                    // pInstanceParamGroup->setName(parts[3]);
+                    // g3.add(*pInstanceParamGroup);
+                    //
+                    // updateParameter(msg, g1);
+                    //
+                    // // restore
+                    // pInstanceParamGroup->setName(tmp);
+                    // g3.remove(*pInstanceParamGroup);
                 }
             }
         }

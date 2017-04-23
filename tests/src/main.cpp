@@ -53,9 +53,6 @@ class ofApp: public ofxUnitTestsApp{
             auto resDefRef = manager.defineResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
                 def.setResourceType("ImageNode");
                 // // def->addInstantiator([](){ return make_shared<ImageNode>(); }); // optional, default to this
-                // def->addProperty<string>("file",                                    // property name
-                //     [](ImageNode &node){ return node.getFileName(); },              // getter method that extracts a value from the instance
-                //     [](ImageNode &node, string& value){ node.setFileName(value); });// setter method that pushes a value into the instance
                 def.addProperty("status",
                     [](ImageNode& node){ return node.status; },
                     [](ImageNode& node, const string& value){ return node.status = value; });
@@ -97,7 +94,6 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(imgRef->status, "update1", "");
 
                 // perform update through OSC
-                // "/ofxCRUD/ImageNode/update/1/status", "new_value"
                 ofxOscMessage oscMsg;
                 oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/status");
                 oscMsg.addStringArg("update2");
@@ -105,6 +101,29 @@ class ofApp: public ofxUnitTestsApp{
 
                 // check if the param's change was propagated to the node's attribute
                 test_eq(imgRef->status, "update2", "");
+            TEST_END
+
+            TEST_START("READ")
+                // read from resource definition
+                string value = imageNodeResDefRef->read(1, "status");
+                test_eq(value, "update2", "");
+
+                // request attribute through oscMessage
+                ofxOscMessage oscMsg;
+                oscMsg.setAddress("/ofxCRUD/ImageNode/read/1/status");
+
+                string responseAddr = "";
+                string responseValue = "";
+
+                manager.responseMessageEvent += [&responseAddr, &responseValue](ofxOscMessage msg){
+                    responseAddr = msg.getAddress();
+                    responseValue = msg.getArgAsString(0);
+                };
+
+                manager.process(oscMsg);
+
+                test_eq(responseAddr, "/ofxCRUD/ImageNode/update/1/status", "");
+                test_eq(responseValue, "update2", "");
             TEST_END
         TEST_END
     }

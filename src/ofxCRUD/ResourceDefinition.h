@@ -34,6 +34,7 @@ namespace ofxCRUD {
             virtual shared_ptr<void> createInstance() = 0;
             virtual shared_ptr<void> find(unsigned int id) = 0;
             virtual bool update(int id, const string& property, const string& value) = 0;
+            virtual const string& read(int id, const string& property) = 0;
     };
 
     template<typename ResourceType>
@@ -59,9 +60,13 @@ namespace ofxCRUD {
                         setterFunc(*static_pointer_cast<ResourceType>(subject).get(), value);
                     }
 
-                    virtual const string& get(shared_ptr<void>){
-                        string a = "tmp";
-                        return a;
+                    virtual const string& get(shared_ptr<void> subject){
+                        if(!setterFunc){
+                            ofLogWarning() << "no setter func, can't set property";
+                            return "";
+                        }
+
+                        return getterFunc(*static_pointer_cast<ResourceType>(subject).get());
                     }
 
                 private:
@@ -127,6 +132,23 @@ namespace ofxCRUD {
                 propDefRef->set(instanceRef, value);
 
                 return true;
+            }
+
+            virtual const string& read(int id, const string& property){
+                // get writer lambda, pass it the string
+                auto instanceRef = find(id);
+                if(!instanceRef){
+                    ofLogWarning() << "could not find instance with id: " << id;
+                    return "";
+                }
+
+                auto propDefRef = findPropDef(property);
+                if(!propDefRef){
+                    ofLogWarning() << "could not find property definition with name: " << property;
+                    return "";
+                }
+
+                return propDefRef->get(instanceRef);
             }
 
         private:

@@ -8,7 +8,7 @@ class ImageNode {
 
     public: // static methods
 
-        static void registerCrud(ofxCRUD::Manager& crud);
+        static void createResource(ofxCRUD::Manager& crud);
 
     public: // instance methods
 

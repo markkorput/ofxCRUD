@@ -28,7 +28,7 @@ void ofApp::setup(){
     ofSetWindowTitle("ofxCRUD - example-images");
 
     // register CRUD resource(s)
-    ImageNode::registerCrud(crudManager);
+    ImageNode::createResource(crudManager);
 
     crudManager.setupOscReceiver(8080);
 }
@@ -38,9 +38,7 @@ void ofApp::update(){
 }
 
 void ofApp::draw(){
-    auto resource = crudManager.getResourceDefinition<ImageNode>("ImageNode");
-    auto instances = resource->getInstances();
-    for(auto imageNodeRef : instances){
+    for(auto imageNodeRef : crudManager.getResource<ImageNode>("ImageNode")->getInstances()){
         imageNodeRef.second->draw();
     }
 }

@@ -1,8 +1,8 @@
 #include "ImageNode.h"
 
-void ImageNode::registerCrud(ofxCRUD::Manager& crud){
-    crud.createResource<ImageNode>([](ResourceDefinition<ImageNode>& def){
-        def.setResourceType("ImageNode");
+void ImageNode::createResource(ofxCRUD::Manager& crud){
+    crud.createResource<ImageNode>([](Resource<ImageNode>& def){
+        def.setName("ImageNode");
         def.addProperty("file",
             nullptr, // no getter for now; write-only!
             [](ImageNode& node, const string& value){ node.setFile(value); });

@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxOsc.h"
 
+const string NOTHING = "";
+
 namespace ofxCRUD {
 
     class BasePropertyDefinition {
@@ -67,7 +69,7 @@ namespace ofxCRUD {
                     virtual const string& get(shared_ptr<void> subject){
                         if(!setterFunc){
                             ofLogWarning() << "no setter func, can't set property";
-                            return "";
+                            return NOTHING;
                         }
 
                         return getterFunc(*static_pointer_cast<ResourceType>(subject).get());
@@ -155,13 +157,13 @@ namespace ofxCRUD {
                 auto instanceRef = find(id);
                 if(!instanceRef){
                     ofLogWarning() << "could not find instance with id: " << id;
-                    return "";
+                    return NOTHING;
                 }
 
                 auto propDefRef = findPropDef(property);
                 if(!propDefRef){
                     ofLogWarning() << "could not find property definition with name: " << property;
-                    return "";
+                    return NOTHING;
                 }
 
                 return propDefRef->get(instanceRef);

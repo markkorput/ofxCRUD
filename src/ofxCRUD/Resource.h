@@ -7,29 +7,17 @@ const string NOTHING = "";
 
 namespace ofxCRUD {
 
-    class BasePropertyDefinition {
+    class BaseResource {
+        protected:
+            string name;
+
         public:
-            BasePropertyDefinition(){
+            const string& getName(){
+                return name;
             }
 
             void setName(const string& newName){
                 name = newName;
-            }
-
-            virtual void set(shared_ptr<void> subject, const string& value) = 0;
-            virtual const string& get(shared_ptr<void>) = 0;
-
-        private:
-            string name;
-    };
-
-    class BaseResourceDefinition {
-        protected:
-            string resourceType;
-
-        public:
-            const string& getResourceType(){
-                return resourceType;
             }
 
             // virtual void addProperty(const string& name) = 0;
@@ -40,24 +28,24 @@ namespace ofxCRUD {
             virtual bool update(unsigned int id, const string& property, const string& value) = 0;
             virtual const string& read(unsigned int id, const string& property) = 0;
             virtual void deleteInstance(unsigned int id) = 0;
+            virtual void deleteInstance(shared_ptr<void> instance) = 0;
             virtual unsigned int getIdFor(shared_ptr<void> instance) = 0;
     };
 
     template<typename ResourceType>
-    class ResourceDefinition : public BaseResourceDefinition {
+    class Resource : public BaseResource {
 
             typedef std::function<const string& (ResourceType&)> PROP_GET_FUNC;
             typedef std::function<void (ResourceType&, const string& value)> PROP_SET_FUNC;
 
-            class PropertyDefinition : public BasePropertyDefinition {
+            class PropertyDefinition {
                 public:
-                    void setup(const string& name, PROP_GET_FUNC getter, PROP_SET_FUNC setter){
-                        setName(name);
+                    void setup(PROP_GET_FUNC getter, PROP_SET_FUNC setter){
                         getterFunc = getter;
                         setterFunc = setter;
                     }
 
-                    virtual void set(shared_ptr<void> subject, const string& value){
+                    void set(shared_ptr<void> subject, const string& value){
                         if(!setterFunc){
                             ofLogWarning() << "no setter func, can't set property";
                             return;
@@ -66,7 +54,7 @@ namespace ofxCRUD {
                         setterFunc(*static_pointer_cast<ResourceType>(subject).get(), value);
                     }
 
-                    virtual const string& get(shared_ptr<void> subject){
+                    const string& get(shared_ptr<void> subject){
                         if(!setterFunc){
                             ofLogWarning() << "no setter func, can't set property";
                             return NOTHING;
@@ -82,19 +70,15 @@ namespace ofxCRUD {
 
         public:
 
-            ResourceDefinition() : nextId(1){
-            }
-
-            void setResourceType(const string& newResourceType){
-                resourceType = newResourceType;
+            Resource() : nextId(1){
             }
 
             void addProperty(const string& name,
                 PROP_GET_FUNC getterFunc = nullptr,
                 PROP_SET_FUNC setterFunc = nullptr){
                 auto propDef = make_shared<PropertyDefinition>();
-                propDef->setup(name, getterFunc, setterFunc);
-                propDefRefs[name] = propDef;
+                propDef->setup(getterFunc, setterFunc);
+                properties[name] = propDef;
             }
 
             virtual shared_ptr<void> createInstance(){
@@ -122,13 +106,6 @@ namespace ofxCRUD {
             virtual shared_ptr<void> find(unsigned int id){
                 auto it = instances.find(id);
                 if(it == instances.end())
-                    return nullptr;
-                return it->second;
-            }
-
-            shared_ptr<PropertyDefinition> findPropDef(const string& name){
-                auto it = propDefRefs.find(name);
-                if(it == propDefRefs.end())
                     return nullptr;
                 return it->second;
             }
@@ -181,6 +158,10 @@ namespace ofxCRUD {
                 instances.erase(id);
             }
 
+            virtual void deleteInstance(shared_ptr<void> instance){
+                deleteInstance(getIdFor(instance));
+            }
+
             virtual unsigned int getIdFor(shared_ptr<void> instance){
                 shared_ptr<ResourceType> subject = static_pointer_cast<ResourceType>(instance);
                 for(auto it = instances.begin(); it != instances.end(); it++){
@@ -191,9 +172,18 @@ namespace ofxCRUD {
                 return 0; // zero is an invalid ID
             }
 
+        private: // methods
+
+            shared_ptr<PropertyDefinition> findPropDef(const string& name){
+                auto it = properties.find(name);
+                if(it == properties.end())
+                    return nullptr;
+                return it->second;
+            }
+
         private:
             unsigned int nextId;
-            std::map<string, shared_ptr<PropertyDefinition>> propDefRefs;
+            std::map<string, shared_ptr<PropertyDefinition>> properties;
             std::map<unsigned int, shared_ptr<ResourceType>> instances;
     };
 }

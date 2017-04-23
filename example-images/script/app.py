@@ -35,6 +35,7 @@ class App:
     def update(self):
         self.send('/ofxCRUD/ImageNode/create/'+str(self.nextIndex))
         self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/file', ['images/dance'+str(int(random.random()*10)+1)+'.jpg'])
+        self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/pos', [",".join([str(random.random()*500), str(random.random()*300), '0'])])
         self.nextIndex += 1
         time.sleep(1.0)
 

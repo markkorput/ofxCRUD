@@ -6,6 +6,15 @@ void ImageNode::registerCrud(ofxCRUD::Manager& crud){
         def.addProperty("file",
             nullptr, // no getter for now; write-only!
             [](ImageNode& node, const string& value){ node.setFile(value); });
+        def.addProperty("pos",
+            nullptr, // no getter for now; write-only!
+            [](ImageNode& node, const string& value){
+                auto parts = ofSplitString(value, ",");
+                node.setPosition(ofVec3f(
+                    ofToFloat(parts[0]),
+                    ofToFloat(parts[1]),
+                    ofToFloat(parts[2])));
+            });
     });
 }
 

@@ -4,25 +4,17 @@
 #include "ofVec3f.h"
 #include "ofxCRUD.h"
 
-class ImageNode {
+namespace Resources {
+    class ValueNode {
 
-    public: // static methods
+        public: // instance methods
 
-        static void createResource(ofxCRUD::Manager& crud);
+            void setValue(float value){ this->value = value }
+            float getValue(){ return value; }
 
-    public: // instance methods
+        private: // CRUD attributes
 
-        void draw();
+            float value;
 
-        void setFile(const string& filePath);
-        void setPosition(const ofVec3f& newPos){ position = newPos; }
-
-    private: // CRUD attributes
-
-        string filePath;
-        ofVec3f position;
-
-    private: // attributes
-
-        ofImage image;
-};
+    };
+}

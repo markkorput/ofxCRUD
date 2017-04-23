@@ -94,7 +94,6 @@ class ofApp: public ofxUnitTestsApp{
                 test_eq(imgRef->status, "update1", "");
 
                 // perform update through OSC
-                // "/ofxCRUD/ImageNode/update/1/status", "new_value"
                 ofxOscMessage oscMsg;
                 oscMsg.setAddress("/ofxCRUD/ImageNode/update/1/status");
                 oscMsg.addStringArg("update2");
@@ -105,8 +104,28 @@ class ofApp: public ofxUnitTestsApp{
             TEST_END
 
             TEST_START("READ")
+                // read from resource definition
                 string value = imageNodeResDefRef->read(1, "status");
                 test_eq(value, "update2", "");
+
+                // request attribute through oscMessage
+                ofxOscMessage oscMsg;
+                oscMsg.setAddress("/ofxCRUD/ImageNode/read/1/status");
+
+                string responseAddr = "";
+                string responseValue = "";
+
+                manager.responseMessageEvent += [&responseAddr, &responseValue](ofxOscMessage msg){
+                    responseAddr = msg.getAddress();
+                    responseValue = msg.getArgAsString(0);
+                };
+
+                manager.process(oscMsg);
+
+                test_eq(responseAddr, "/ofxCRUD/ImageNode/update/1/status", "");
+                test_eq(responseAddr, "update2", "");
+
+
             TEST_END
         TEST_END
     }

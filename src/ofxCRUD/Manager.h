@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxOsc.h"
+// local
+#include "LambdaEvent.h"
 
 #include "ResourceDefinition.h"
 
@@ -126,7 +128,12 @@ namespace ofxCRUD {
             return false;
         }
 
-    private:
+    public: // events
+
+        LambdaEvent<ofxOscMessage> responseMessageEvent;
+
+    private: // attributes
+
         std::vector<shared_ptr<BaseResourceDefinition>> definedResourceDefinitions;
         shared_ptr<void> activeInstanceRef;
     };

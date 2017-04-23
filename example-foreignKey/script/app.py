@@ -26,6 +26,15 @@ class App:
             self.logger.error("OSC connection failure: {0}".format(err))
             return False
 
+        self.send('/ofxCRUD/Node/create/'+str(self.nextIndex))
+        self.send('/ofxCRUD/Node/update/'+str(self.nextIndex)+'/autoMove', ['true'])
+        self.nextIndex += 1
+        # self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/file', ['images/dance'+str(int(random.random()*10)+1)+'.jpg'])
+        # self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/pos', [",".join([str(random.random()*500), str(random.random()*300), '0'])])
+        self.send('/ofxCRUD/Node/create/'+str(self.nextIndex))
+        self.send('/ofxCRUD/Node/update/'+str(self.nextIndex)+'/autoMove', ['false'])
+        self.nextIndex += 1
+
         self.bRunning = True
         return True
 
@@ -33,12 +42,11 @@ class App:
         return self.bRunning
 
     def update(self):
-        self.send('/ofxCRUD/Node/create/'+str(self.nextIndex))
-        self.send('/ofxCRUD/Node/update/'+str(self.nextIndex)+'/autoMove', ['true'])
-        # self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/file', ['images/dance'+str(int(random.random()*10)+1)+'.jpg'])
-        # self.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/pos', [",".join([str(random.random()*500), str(random.random()*300), '0'])])
-        self.nextIndex += 1
         time.sleep(1.0)
+
+        self.send('/ofxCRUD/Node/read/1/value')
+        
+
 
     def send(self, addr, data=[]):
         msg = OSC.OSCMessage()

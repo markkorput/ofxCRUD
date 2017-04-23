@@ -46,5 +46,6 @@ namespace ofxCRUD {
 
         std::vector<shared_ptr<BaseResource>> resources;
         ofxOscReceiver oscReceiver;
+        ofxOscSender oscSender;
     };
 }

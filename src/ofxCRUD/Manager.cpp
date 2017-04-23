@@ -55,7 +55,7 @@ void Manager::process(ofxOscMessage& msg){
         }
 
         if(parts[2] == "read"){
-            // request: "/ofxCRUD/ImageNode/read/1/status"
+            // request: "/ofxCRUD/ImageNode/read/1/status/<repsonse-host>/<response-port>"
             // response: "/ofxCRUD/ImageNode/update/1/status"
             if(parts.size() < 5){
                 ofLogWarning() << "instance ID and/or property name missing from update message: " << msg.getAddress();
@@ -63,12 +63,19 @@ void Manager::process(ofxOscMessage& msg){
             }
 
             string value = resRef->read(ofToInt(parts[3]), parts[4]);
-            ofLogWarning() << "TODO reply-connection construct";
 
             ofxOscMessage replyMsg;
             replyMsg.setAddress("/ofxCRUD/"+parts[1]+"/update/"+parts[3]+"/"+parts[4]);
             replyMsg.addStringArg(value);
             responseMessageEvent.notifyListeners(replyMsg);
+
+            if(parts.size() < 7){
+                ofLogWarning() << "no reply address info in osc message address";
+                return;
+            }
+
+            oscSender.setup(parts[5], ofToInt(parts[6]));
+            oscSender.sendMessage(replyMsg);
             return;
         }
 

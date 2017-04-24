@@ -14,7 +14,7 @@ class App:
 
         self.host = OSC_HOST
         self.port = OSC_PORT
-        self.bRunning = False
+        self.running = False
         self.nextIndex = 1
 
         self.logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class App:
         self.oscClient.setup(OSC_HOST, OSC_PORT)
         self.oscServer.setup('', OSC_INCOMING_PORT)
         self.oscServer.messageEvent += self._onOscMessage
-        self.bRunning = True
+        self.running = True
 
         self.oscClient.send('/ofxCRUD/Node/create/1')
         self.oscClient.send('/ofxCRUD/Node/update/1/autoMove', ['true'])
@@ -42,12 +42,12 @@ class App:
 
         return True
 
-    def isRunning(self):
-        return self.bRunning
-
     def update(self):
         self.oscClient.send('/ofxCRUD/Node/read/1/value/127.0.0.1/'+str(OSC_INCOMING_PORT))
         self.oscServer.update()
+
+    def destroy(self):
+        self.oscServer.destroy()
 
     def _onOscMessage(self, addr, data, tags = [], client_address = None):
         # self.logger.info('got msg: '+addr+" with: " + ",".join(data))
@@ -60,7 +60,9 @@ if __name__ == '__main__':
     app.setup()
 
     try:
-        while(app.isRunning()):
+        while(app.running):
             app.update()
     except KeyboardInterrupt:
         print('KeyboardInterrupt. Quitting.')
+
+    app.destroy();

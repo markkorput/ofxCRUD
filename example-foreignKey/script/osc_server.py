@@ -109,4 +109,4 @@ class OscServer:
         self.logger.debug('osc-in {0}:{1} {2} [{3}] from {4}'.format(self.host, self.port, addr,
             ", ".join(map(lambda x: str(x), data)), client_address))
 
-        self.messageEvent(addr, tags, data, client_address)
+        self.messageEvent(addr, data, tags, client_address)

@@ -12,8 +12,9 @@ namespace ofxCRUD {
     class Manager {
 
     public:
-
+        ~Manager(){ destroy(); }
         void update();
+        void destroy();
 
         template<typename T>
         shared_ptr<Resource<T>> createResource(std::function<void (Resource<T>&)>  func){
@@ -47,5 +48,7 @@ namespace ofxCRUD {
         std::vector<shared_ptr<BaseResource>> resources;
         ofxOscReceiver oscReceiver;
         ofxOscSender oscSender;
+
+        std::vector<string> shutdown_addresses;
     };
 }

@@ -96,7 +96,7 @@ void ofApp::draw(){
 }
 
 void ofApp::exit(ofEventArgs &args){
-    ofxCRUD::stopScript();
+    // ofxCRUD::stopScript();
 }
 
 //--------------------------------------------------------------

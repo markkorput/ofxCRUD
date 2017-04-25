@@ -30,6 +30,7 @@ class App:
         self.oscServer.messageEvent += self._onOscMessage
         self.running = True
 
+        self.oscClient.send('/ofxCRUD/_ctrl/shutdown/127.0.0.1/'+str(OSC_INCOMING_PORT))
         self.oscClient.send('/ofxCRUD/Node/create/1')
         self.oscClient.send('/ofxCRUD/Node/update/1/autoMove', ['true'])
         self.nextIndex += 1
@@ -54,6 +55,14 @@ class App:
         # self.logger.info('got msg: '+addr+" with: " + ",".join(data))
         if addr == '/ofxCRUD/Node/update/1/value':
             self.oscClient.send('/ofxCRUD/Node/update/2/value', data)
+            return
+
+        if addr == '/ofxCRUD/_ctrl/shutdown':
+            self.running = False
+            return
+
+        self.logger.warn("unknown message: "+addr)
+
 
     def signal_handler(self, signal, frame):
         self.logger.warn("received signal: " + str(signal))

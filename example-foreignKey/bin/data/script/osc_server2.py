@@ -57,7 +57,7 @@ class OscServer(threading.Thread):
             return False
 
         disp = dispatcher.Dispatcher()
-        disp.map("/ofxCRUD/Node/update/1/value", self._onOscMessage)
+        disp.map("*", self._onOscMessage)
         #disp.map("/volume", print_volume_handler, "Volume")
         #disp.map("/logvolume", print_compute_handler, "Log volume", math.log)
 

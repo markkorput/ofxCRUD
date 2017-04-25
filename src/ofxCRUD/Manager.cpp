@@ -10,6 +10,18 @@ void Manager::update(){
     }
 }
 
+void Manager::destroy(){
+    for(auto shutdown_address : shutdown_addresses){
+        vector<string> parts = ofSplitString(shutdown_address, "/");
+        ofxOscMessage msg;
+        msg.setAddress("/ofxCRUD/_ctrl/shutdown");
+
+        ofLog() << "sending shutdown to: " << shutdown_address;
+        oscSender.setup(parts[0], ofToInt(parts[1]));
+        oscSender.sendMessage(msg);
+    }
+}
+
 shared_ptr<BaseResource> Manager::getResource(const string& name){
     for(auto resRef :  resources){
         if(resRef->getName() == name){
@@ -82,6 +94,13 @@ void Manager::process(ofxOscMessage& msg){
 
         if(parts[2] == "delete"){
             resRef->deleteInstance(ofToInt(parts[3]));
+            return;
+        }
+    }
+
+    if(parts[1] == "_ctrl"){
+        if(parts[2] == "shutdown" && parts.size() >= 5){
+            shutdown_addresses.push_back(parts[3]+"/"+parts[4]);
             return;
         }
     }

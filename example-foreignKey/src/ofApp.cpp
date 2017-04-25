@@ -74,6 +74,8 @@ void ofApp::setup(){
     valuesNodesManager = manager.getResource<ValueNode>("Node");
 
     manager.setupOscReceiver(8080);
+
+    ofxCRUD::startScript(); // by default starts script/app.py
 }
 
 void ofApp::update(){

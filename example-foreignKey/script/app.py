@@ -34,10 +34,12 @@ class App:
         self.oscClient.send('/ofxCRUD/Node/create/1')
         self.oscClient.send('/ofxCRUD/Node/update/1/autoMove', ['true'])
         self.nextIndex += 1
-        self.oscClient.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/file', ['images/dance'+str(int(random.random()*10)+1)+'.jpg'])
-        self.oscClient.send('/ofxCRUD/ImageNode/update/'+str(self.nextIndex)+'/pos', [",".join([str(random.random()*500), str(random.random()*300), '0'])])
         self.oscClient.send('/ofxCRUD/Node/create/2')
         self.oscClient.send('/ofxCRUD/Node/update/2/autoMove', ['false'])
+        self.nextIndex += 1
+        self.oscClient.send('/ofxCRUD/Node/create/3')
+        self.oscClient.send('/ofxCRUD/Node/update/3/autoMove', ['false'])
+        self.oscClient.send('/ofxCRUD/Node/update/3/leaderNodeId', ['1'])
         self.nextIndex += 1
 
         return True

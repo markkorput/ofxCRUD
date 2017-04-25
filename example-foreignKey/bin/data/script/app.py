@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import time, math, random, logging
+import time, math, random, logging, signal
 
 from osc_server2 import OscServer
 from osc_client import OscClient
@@ -25,7 +25,6 @@ class App:
         self.oscServer = OscServer(logger=self.logger)
 
     def setup(self):
-        print('setup')
         self.oscClient.setup(OSC_HOST, OSC_PORT)
         self.oscServer.setup('', OSC_INCOMING_PORT)
         self.oscServer.messageEvent += self._onOscMessage
@@ -56,10 +55,18 @@ class App:
         if addr == '/ofxCRUD/Node/update/1/value':
             self.oscClient.send('/ofxCRUD/Node/update/2/value', data)
 
+    def signal_handler(self, signal, frame):
+        self.logger.warn("received signal: " + str(signal))
+        self.running = False
+
 if __name__ == '__main__':
     logging.basicConfig()
+    logging.getLogger(__name__).warn("Let's do this.")
+
     app = App({'verbose': True})
     app.setup()
+    signal.signal(signal.SIGINT, app.signal_handler)
+    signal.signal(signal.SIGTERM, app.signal_handler)
 
     try:
         while(app.running):
@@ -68,3 +75,4 @@ if __name__ == '__main__':
         print('KeyboardInterrupt. Quitting.')
 
     app.destroy();
+    logging.getLogger(__name__).warn("Done, goodbye.")

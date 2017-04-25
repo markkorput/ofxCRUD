@@ -35,6 +35,7 @@ class ofApp : public ofBaseApp{
         void setup();
         void update();
         void draw();
+        void exit(ofEventArgs &args);
 
     private: // attributes
         ofxCRUD::Manager manager;
@@ -92,6 +93,10 @@ void ofApp::draw(){
         ofDrawRectangle(ofGetWidth() * (0.5f - nodeRef.second->getValue()*0.4f), y, 25, 25);
         y += 50;
     }
+}
+
+void ofApp::exit(ofEventArgs &args){
+    ofxCRUD::stopScript();
 }
 
 //--------------------------------------------------------------
